@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -13,10 +13,9 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"text/template"
 	"time"
 
-	"github.com/jpillora/installer/scripts"
+	"github.com/syumai/workers/cloudflare/fetch"
 )
 
 const (
@@ -24,6 +23,7 @@ const (
 )
 
 var (
+	cli          = fetch.NewClient()
 	isTermRe     = regexp.MustCompile(`(?i)^(curl|wget)\/`)
 	isHomebrewRe = regexp.MustCompile(`(?i)^homebrew`)
 	errMsgRe     = regexp.MustCompile(`[^A-Za-z0-9\ :\/\.]`)
@@ -69,7 +69,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// calculate response type
 	ext := ""
-	script := ""
 	qtype := r.URL.Query().Get("type")
 	if qtype == "" {
 		ua := r.Header.Get("User-Agent")
@@ -91,27 +90,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, cleaned, http.StatusInternalServerError)
 	}
-	switch qtype {
-	case "json":
-		w.Header().Set("Content-Type", "application/json")
-		ext = "json"
-		script = ""
-	case "script":
-		w.Header().Set("Content-Type", "text/x-shellscript")
-		ext = "sh"
-		script = string(scripts.Shell)
-	case "homebrew", "ruby":
-		w.Header().Set("Content-Type", "text/ruby")
-		ext = "rb"
-		script = string(scripts.Homebrew)
-	case "text":
-		w.Header().Set("Content-Type", "text/plain")
-		ext = "txt"
-		script = string(scripts.Text)
-	default:
-		showError("Unknown type", http.StatusInternalServerError)
-		return
-	}
+	
 	q := Query{
 		User:      "",
 		Program:   "",
@@ -170,27 +149,30 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		showError(err.Error(), http.StatusBadGateway)
 		return
 	}
-	// no render script? just output as json
-	if script == "" {
+
+	switch qtype {
+	case "json":
+		w.Header().Set("Content-Type", "application/json")
+		ext = "json"
 		b, _ := json.MarshalIndent(result, "", "  ")
 		w.Write(b)
-		return
-	}
-	// load template
-	t, err := template.New("installer").Parse(script)
-	if err != nil {
-		showError("installer BUG: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	// execute template
-	buff := bytes.Buffer{}
-	if err := t.Execute(&buff, result); err != nil {
-		showError("Template error: "+err.Error(), http.StatusInternalServerError)
+	case "script":
+		w.Header().Set("Content-Type", "text/x-shellscript")
+		ext = "sh"
+		WriteShell(w, result)
+	case "homebrew", "ruby":
+		w.Header().Set("Content-Type", "text/ruby")
+		ext = "rb"
+		WriteRuby(w, result)
+	case "text":
+		w.Header().Set("Content-Type", "text/plain")
+		ext = "txt"
+		WriteText(w, result)
+	default:
+		showError("Unknown type", http.StatusInternalServerError)
 		return
 	}
 	log.Printf("serving script %s/%s@%s (%s)", result.User, result.Program, result.Release, ext)
-	// ready
-	w.Write(buff.Bytes())
 }
 
 type Asset struct {
@@ -226,12 +208,17 @@ func (as Assets) HasM1() bool {
 }
 
 func (h *Handler) get(url string, v interface{}) error {
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	if h.Config.Token != "" {
-		req.Header.Set("Authorization", "token "+h.Config.Token)
+	r, err := fetch.NewRequest(context.TODO(), http.MethodGet, url, nil)
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
-	resp, err := http.Get(url)
+	r.Header.Set("Accept", "application/vnd.github.v3+json")
+	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
+	if h.Config.Token != "" {
+		r.Header.Set("Authorization", "token "+h.Config.Token)
+	}
+	resp, err := cli.Do(r, nil)
 	if err != nil {
 		return fmt.Errorf("request failed: %s: %s", url, err)
 	}

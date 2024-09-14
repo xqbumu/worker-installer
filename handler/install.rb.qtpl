@@ -1,0 +1,25 @@
+{% func Ruby(r Result) %}
+require "formula"
+
+class Installer < Formula
+  homepage "https://github.com/{%s r.User %}/{%s r.Program %}"
+  version "{%s r.Release %}"
+
+  {% for _, i := range r.Assets %}{% if i.Arch != "arm" %}if {% if i.IsMac() %}!{% endif %}OS.linux? && {% if i.Is32Bit() %}!{% endif %}Hardware.is_64_bit?
+    url "{%s i.URL %}"
+    {% if len(i.SHA256)>0 %}sha256 "{%s i.SHA256 %}"{% endif %}
+  els{% endif %}{% endfor %}e
+    onoe "Not supported"
+  end
+
+  depends_on :arch => :intel
+
+  def install
+    bin.install '{%s r.Program %}'
+  end
+
+  def caveats
+    "{%s r.Program %} was installed using https://github.com/jpillora/installer"
+  end
+end
+{% endfunc %}

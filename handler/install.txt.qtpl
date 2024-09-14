@@ -1,0 +1,22 @@
+{% func Text(r Result) %}
+repository: https://github.com/{%s r.User %}/{%s r.Program %}
+user: {%s r.User %}
+program: {%s r.Program %}{% if len(r.AsProgram)>0 %}
+as: {%s r.AsProgram %}{% endif %}
+release: {%s r.ResolvedRelease %}
+move-into-path: {%v r.MoveToPath %}
+sudo-move: {%v r.SudoMove %}
+used-search: {%v r.Search %}
+asset-select: "{% if len(r.Select)>0  %} {%s r.Select %} {% endif %}"
+
+release assets:
+{% for _, i := range r.Assets %}  {%s i.Key() %}
+    url:    {%s i.URL %} {% if len(i.SHA256)!=0 %}
+    sha256: {%s i.SHA256 %}{% endif %}
+{% endfor %}
+has-m1-asset: {%v r.M1Asset %}
+
+to see shell script, append ?type=script
+for more information on this server, visit:
+  github.com/jpillora/installer
+{% endfunc %}

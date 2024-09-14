@@ -1,2 +1,5 @@
 tmp/
 test.sh
+build
+node_modules
+.wrangler
