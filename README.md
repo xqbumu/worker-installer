@@ -8,6 +8,44 @@ Installer is an HTTP server which returns shell scripts. The returned script wil
 [![GoDev](https://img.shields.io/static/v1?label=godoc&message=reference&color=00add8)](https://pkg.go.dev/github.com/jpillora/installer)
 [![CI](https://github.com/jpillora/installer/workflows/CI/badge.svg)](https://github.com/jpillora/installer/actions?workflow=CI)
 
+## Cloudflare Workers
+
+### Install
+
+- [Install Wrangler](https://developers.cloudflare.com/workers/wrangler/install-and-update/)
+- [Install Tiny Go](https://tinygo.org/getting-started/install/)
+- Install quicktemplate QTC
+```sh
+go install github.com/valyala/quicktemplate/qtc@latest
+```
+
+### Deploy
+
+```sh
+wrangler deploy
+```
+
+### Call Workers
+
+- Support multiple binaries, support both exact and fuzzy matching for files
+
+```sh
+# mp means multi program
+# mp fuzzy matching: client_linux_amd64, you can just input client
+curl https://your-workers-domain.workers.dev/xtaci/kcptun!?mp=client,server | bash
+mv /usr/local/bin/client /usr/local/bin/kcptun_client
+mv /usr/local/bin/server /usr/local/bin/kcptun_server
+/usr/local/bin/kcptun_client -v
+/usr/local/bin/kcptun_server -v
+# exact matching, only install sslocal and ssserver
+curl https://xxx-yyy.zzz.workers.dev/shadowsocks/shadowsocks-rust!?mp=sslocal,ssserver | bash
+mv /usr/local/bin/sslocal /usr/local/bin/ss_client
+mv /usr/local/bin/ssserver /usr/local/bin/ss_server
+/usr/local/bin/ss_client -V
+/usr/local/bin/ss_server -V
+```
+
+
 ## Usage
 
 ```sh
