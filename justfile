@@ -24,3 +24,6 @@ b:
 # size: 1.1 MB / gzip 460 KB
 # tinygo build -target wasm -o ./build/app2.wasm -no-debug -panic=trap -gc=leaking                    
 # size: 959 KB / gzip 387 KB
+
+i:
+    go install github.com/valyala/quicktemplate/qtc@latest
