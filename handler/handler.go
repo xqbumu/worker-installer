@@ -150,6 +150,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// multi program, such: mp=ss_server,ss_client
+	if len(r.URL.Query().Get("mp")) != 0 {
+		result.Program = r.URL.Query().Get("mp")
+	}
 	switch qtype {
 	case "json":
 		w.Header().Set("Content-Type", "application/json")

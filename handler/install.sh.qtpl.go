@@ -43,11 +43,11 @@ function install {
 	qw422016.E().S(r.User)
 //line handler/install.sh.qtpl:19
 	qw422016.N().S(`"
-	PROG="`)
+	IFS=',' read -r -a PROG_LIST <<< "`)
 //line handler/install.sh.qtpl:20
 	qw422016.E().S(r.Program)
 //line handler/install.sh.qtpl:20
-	qw422016.N().S(`"
+	qw422016.N().S(`" 
 	ASPROG="`)
 //line handler/install.sh.qtpl:21
 	if len(r.AsProgram) > 0 {
@@ -215,7 +215,7 @@ function install {
 	}
 //line handler/install.sh.qtpl:95
 	qw422016.N().S(`"
-	echo -n " $USER/$PROG"
+	echo -n " $USER/${PROG_LIST[*]}"
 	if [ ! -z "$RELEASE" ]; then
 		echo -n " $RELEASE"
 	fi
@@ -250,10 +250,10 @@ function install {
 	cd $TMP_DIR
 	if [[ $FTYPE = ".gz" ]]; then
 		which gzip > /dev/null || fail "gzip is not installed"
-		bash -c "$GET $URL" | gzip -d - > $PROG || fail "download failed"
+		bash -c "$GET $URL" | gzip -d - > "${PROG_LIST[0]}" || fail "download failed"
 	elif [[ $FTYPE = ".bz2" ]]; then
 		which bzip2 > /dev/null || fail "bzip2 is not installed"
-		bash -c "$GET $URL" | bzip2 -d - > $PROG || fail "download failed"
+		bash -c "$GET $URL" | bzip2 -d - > "${PROG_LIST[0]}" || fail "download failed"
 	elif [[ $FTYPE = ".tar.bz" ]] || [[ $FTYPE = ".tar.bz2" ]]; then
 		which tar > /dev/null || fail "tar is not installed"
 		which bzip2 > /dev/null || fail "bzip2 is not installed"
@@ -262,91 +262,68 @@ function install {
 		which tar > /dev/null || fail "tar is not installed"
 		which gzip > /dev/null || fail "gzip is not installed"
 		bash -c "$GET $URL" | tar zxf - || fail "download failed"
+	elif [[ $FTYPE = ".tar.xz" ]] || [[ $FTYPE = ".tgz" ]]; then
+		which tar > /dev/null || fail "tar is not installed"
+		which xz > /dev/null || fail "xz is not installed"
+		bash -c "$GET $URL" | tar Jxf - || fail "download failed"
 	elif [[ $FTYPE = ".zip" ]]; then
 		which unzip > /dev/null || fail "unzip is not installed"
 		bash -c "$GET $URL" > tmp.zip || fail "download failed"
 		unzip -o -qq tmp.zip || fail "unzip failed"
 		rm tmp.zip || fail "cleanup failed"
 	elif [[ $FTYPE = ".bin" ]]; then
-		bash -c "$GET $URL" > "`)
-//line handler/install.sh.qtpl:137
-	qw422016.E().S(r.Program)
-//line handler/install.sh.qtpl:137
-	qw422016.N().S(`_${OS}_${ARCH}" || fail "download failed"
+		bash -c "$GET $URL" > "${PROG_LIST[0]}_${OS}_${ARCH}" || fail "download failed"
 	else
 		fail "unknown file type: $FTYPE"
 	fi
-	#search subtree largest file (bin)
-	TMP_BIN=$(find . -type f | xargs du | sort -n | tail -n 1 | cut -f 2)
-	if [ ! -f "$TMP_BIN" ]; then
-		fail "could not find find binary (largest file)"
-	fi
-	#ensure its larger than 1MB
-	#TODO linux=elf/darwin=macho file detection?
-	if [[ $(du -m $TMP_BIN | cut -f1) -lt 1 ]]; then
-		fail "no binary found ($TMP_BIN is not larger than 1MB)"
-	fi
-	#move into PATH or cwd
-	chmod +x $TMP_BIN || fail "chmod +x failed"
-	DEST="$OUT_DIR/$PROG"	
-	if [ ! -z "$ASPROG" ]; then
-		DEST="$OUT_DIR/$ASPROG"
-	fi
-	#move without sudo
-	OUT=$(mv $TMP_BIN $DEST 2>&1)
-	STATUS=$?
-	# failed and string contains "Permission denied"
-	if [ $STATUS -ne 0 ]; then
-		if [[ $OUT =~ "Permission denied" ]]; then
-			echo "mv with sudo..."
-			sudo mv $TMP_BIN $DEST || fail "sudo mv failed" 
-		else
-			fail "mv failed ($OUT)"
-		fi
-	fi
-	echo "`)
-//line handler/install.sh.qtpl:169
-	if r.MoveToPath {
-//line handler/install.sh.qtpl:169
-		qw422016.N().S(`Installed at`)
-//line handler/install.sh.qtpl:169
-	} else {
-//line handler/install.sh.qtpl:169
-		qw422016.N().S(`Downloaded to`)
-//line handler/install.sh.qtpl:169
-	}
-//line handler/install.sh.qtpl:169
-	qw422016.N().S(` $DEST"
-	#done
+	for PROG in "${PROG_LIST[@]}"; do
+		BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
+        [[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
+
+        chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
+        DEST="$OUT_DIR/$PROG"
+
+        OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
+        STATUS=$?
+        if [ $STATUS -ne 0 ]; then
+            if [[ $OUT =~ "Permission denied" ]]; then
+                echo "mv with sudo..."
+                sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
+            else
+                fail "mv failed for $BIN_PATH ($OUT)"
+            fi
+        fi
+        echo "Moved $PROG to $DEST"
+    done
 	cleanup
 }
 install
 `)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 }
 
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 func WriteShell(qq422016 qtio422016.Writer, r Result) {
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	StreamShell(qw422016, r)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	qt422016.ReleaseWriter(qw422016)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 }
 
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 func Shell(r Result) string {
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	qb422016 := qt422016.AcquireByteBuffer()
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	WriteShell(qb422016, r)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	qs422016 := string(qb422016.B)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	qt422016.ReleaseByteBuffer(qb422016)
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 	return qs422016
-//line handler/install.sh.qtpl:174
+//line handler/install.sh.qtpl:167
 }
