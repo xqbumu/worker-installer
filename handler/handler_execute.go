@@ -2,16 +2,12 @@ package handler
 
 import (
 	"bufio"
-	"context"
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"sort"
 	"strings"
 	"time"
-
-	"github.com/syumai/workers/cloudflare/fetch"
 )
 
 func (h *Handler) execute(q Query) (Result, error) {
@@ -201,14 +197,9 @@ func (as ghAssets) getSumIndex() (map[string]string, error) {
 	if url == "" {
 		return nil, errors.New("no sum file found")
 	}
-	r, err := fetch.NewRequest(context.TODO(), http.MethodGet, url, nil)
+	resp, err := httpGet(url)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
-	}
-	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
-	resp, err := cli.Do(r, nil)
-	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()

@@ -8,17 +8,37 @@ deploy:
 generate:
 	go generate ./...  
 
+build:
+    just generate
+    go build -ldflags "-s -w" -o {{frontend_out}} .
+
+
 # Frontend recipe
 t:
     just generate
     go run github.com/syumai/workers/cmd/workers-assets-gen@latest
     tinygo build -target wasm -o {{frontend_out}} -no-debug -panic=trap -gc=leaking
 
+
+# Frontend recipe
+tw:
+    just generate
+    go run github.com/syumai/workers/cmd/workers-assets-gen@latest
+    GOOS=wasip1 GOARCH=wasm tinygo build -o {{frontend_out}} -no-debug -panic=trap -gc=leaking
+
+
 # Frontend recipe
 b:
     just generate
     go run github.com/syumai/workers/cmd/workers-assets-gen@latest
     GOOS=js GOARCH=wasm go build -o {{frontend_out}}
+
+
+# Frontend recipe
+w:
+    just generate
+    go run github.com/syumai/workers/cmd/workers-assets-gen@latest
+    GOOS=wasip1 GOARCH=wasm go build -o {{frontend_out}}
 
 # tinygo build -target wasm -o ./build/app1.wasm -no-debug -panic=trap  
 # size: 1.1 MB / gzip 460 KB

@@ -18,6 +18,6 @@ class Serve < Formula
   end
 
   def caveats
-    "serve was installed using github.com/jpillora/installer"
+    "serve was installed using github.com/cxjava/installer"
   end
 end

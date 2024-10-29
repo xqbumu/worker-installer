@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
@@ -14,8 +13,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/syumai/workers/cloudflare/fetch"
 )
 
 const (
@@ -23,7 +20,6 @@ const (
 )
 
 var (
-	cli          = fetch.NewClient()
 	isTermRe     = regexp.MustCompile(`(?i)^(curl|wget)\/`)
 	isHomebrewRe = regexp.MustCompile(`(?i)^homebrew`)
 	errMsgRe     = regexp.MustCompile(`[^A-Za-z0-9\ :\/\.]`)
@@ -90,7 +86,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, cleaned, http.StatusInternalServerError)
 	}
-	
+
 	q := Query{
 		User:      "",
 		Program:   "",
@@ -135,7 +131,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// validate query
 	valid := q.Program != ""
 	if !valid && path == "" {
-		http.Redirect(w, r, "https://github.com/jpillora/installer", http.StatusMovedPermanently)
+		http.Redirect(w, r, "https://github.com/cxjava/installer", http.StatusMovedPermanently)
 		return
 	}
 	if !valid {
@@ -212,19 +208,9 @@ func (as Assets) HasM1() bool {
 }
 
 func (h *Handler) get(url string, v interface{}) error {
-	r, err := fetch.NewRequest(context.TODO(), http.MethodGet, url, nil)
+	resp, err := httpGetWithToken(url, h.Config.Token)
 	if err != nil {
-		fmt.Println(err)
 		return err
-	}
-	r.Header.Set("Accept", "application/vnd.github.v3+json")
-	r.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
-	if h.Config.Token != "" {
-		r.Header.Set("Authorization", "token "+h.Config.Token)
-	}
-	resp, err := cli.Do(r, nil)
-	if err != nil {
-		return fmt.Errorf("request failed: %s: %s", url, err)
 	}
 	defer resp.Body.Close()
 

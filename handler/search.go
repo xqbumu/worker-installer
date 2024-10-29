@@ -1,14 +1,10 @@
 package handler
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"regexp"
-
-	"github.com/syumai/workers/cloudflare/fetch"
 )
 
 var searchGithubRe = regexp.MustCompile(`https:\/\/github\.com\/(\w+)\/(\w+)`)
@@ -34,17 +30,11 @@ func imFeelingLuck(phrase string) (user, project string, err error) {
 // uses im feeling lucky and grabs the "Location"
 // header from the 302, which contains the github repo
 func captureRepoLocation(url string) (user, project string, err error) {
-	req, err := fetch.NewRequest(context.TODO(), http.MethodGet, url, nil)
+
+	//roundtripper doesn't follow redirects
+	resp, err := httpGet(url)
 	if err != nil {
 		return "", "", err
-	}
-	req.Header.Set("Accept", "*/*")
-	//I'm a browser... :)
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
-	//roundtripper doesn't follow redirects
-	resp, err := cli.Do(req, nil)
-	if err != nil {
-		return "", "", fmt.Errorf("request failed: %s", err)
 	}
 	defer resp.Body.Close()
 	//assume redirection
