@@ -131,7 +131,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// validate query
 	valid := q.Program != ""
 	if !valid && path == "" {
-		http.Redirect(w, r, "https://github.com/cxjava/installer", http.StatusMovedPermanently)
+		http.Redirect(w, r, "https://github.com/xqbumu/worker-installer", http.StatusMovedPermanently)
 		return
 	}
 	if !valid {

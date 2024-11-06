@@ -19,7 +19,7 @@ class Installer < Formula
   end
 
   def caveats
-    "{%s r.Program %} was installed using https://github.com/cxjava/installer"
+    "{%s r.Program %} was installed using https://github.com/xqbumu/worker-installer"
   end
 end
 {% endfunc %}

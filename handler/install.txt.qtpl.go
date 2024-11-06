@@ -122,7 +122,7 @@ has-m1-asset: `)
 
 to see shell script, append ?type=script
 for more information on this server, visit:
-  github.com/cxjava/installer
+  github.com/xqbumu/worker-installer
 `)
 //line handler/install.txt.qtpl:22
 }

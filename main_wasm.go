@@ -17,7 +17,7 @@ var version = "0.0.0-src"
 
 func main() {
 	c := handler.DefaultConfig
-	opts.New(&c).Repo("github.com/cxjava/installer").Version(version).Parse()
+	opts.New(&c).Repo("github.com/xqbumu/worker-installer").Version(version).Parse()
 	log.Printf("default user is '%s'", c.User)
 	h := &handler.Handler{Config: c}
 	workers.Serve(h)

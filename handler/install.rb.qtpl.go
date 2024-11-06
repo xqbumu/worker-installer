@@ -105,7 +105,7 @@ class Installer < Formula
 //line handler/install.rb.qtpl:22
 	qw422016.E().S(r.Program)
 //line handler/install.rb.qtpl:22
-	qw422016.N().S(` was installed using https://github.com/cxjava/installer"
+	qw422016.N().S(` was installed using https://github.com/xqbumu/worker-installer"
   end
 end
 `)
