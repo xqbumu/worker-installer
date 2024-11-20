@@ -13,5 +13,5 @@ type Config struct {
 // DefaultConfig for an installer handler
 var DefaultConfig = Config{
 	Port: 3000,
-	User: "cxjava",
+	User: "xqbumu",
 }

@@ -149,7 +149,11 @@ brew install https://i.jpillora.com/serve
 
 However, homebrew formulas require an SHA1 hash of each binary and currently, the only way to get is to actually download the file. It **might** be acceptable to download all assets if the resulting `.rb` file was cached for a long time.
 
-#### MIT License
+## Refer
+
+https://github.com/cxjava/installer
+
+## MIT License
 
 Copyright © 2020 Jaime Pillora &lt;dev@jpillora.com&gt;
 

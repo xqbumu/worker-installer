@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/jpillora/opts v1.2.3
-	github.com/syumai/workers v0.26.3
+	github.com/syumai/workers v0.27.0
 	github.com/valyala/quicktemplate v1.8.0
 )
 

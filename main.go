@@ -30,7 +30,7 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+	log.Printf("Ready on %s\n", s.Addr)
 	log.Fatal(s.ListenAndServe())
 	log.Print("exiting")
-
 }

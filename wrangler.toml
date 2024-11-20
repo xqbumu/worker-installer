@@ -3,5 +3,4 @@ main = "./build/worker.mjs"
 compatibility_date = "2024-09-14"
 
 [build]
-command = "make build"
-
+command = "make build-tinygo"
