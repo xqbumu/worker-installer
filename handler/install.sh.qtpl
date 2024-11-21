@@ -28,12 +28,19 @@ function choose_asset {
 function install {
 	#settings
 	USER="{%s r.User %}"
-	IFS=',' read -r -a PROG_LIST <<< "{%s r.Program %}" 
+	IFS=',' read -r -a PROG_LIST <<< "{%s r.Program %}"
 	ASPROG="{% if len(r.AsProgram)>0  %} {%s r.AsProgram %} {% endif %}"
 	MOVE="{%v r.MoveToPath %}"
 	RELEASE="{%s r.Release %}" # {%s r.ResolvedRelease %}
 	INSECURE="{%v r.Insecure %}"
-	OUT_DIR="{% if r.MoveToPath %}/usr/local/bin{% else %}$(pwd){% endif %}"
+	OUT_DIR="$(pwd)"
+	{%- if r.MoveToPath -%}
+	if [ -d "$HOME/.local/bin" ]; then
+		OUT_DIR="$HOME/.local/bin"
+	elif [ -d "/opt/local/bin" ]; then
+		OUT_DIR="/opt/local/bin"
+	fi
+	{%- endif -%}
 	GH="https://github.com"
 	#bash check
 	[ ! "$BASH_VERSION" ] && fail "Please use bash instead"
@@ -178,22 +185,26 @@ function install {
 	if [[ $DISTRO = "generic" ]]; then
 		for PROG in "${PROG_LIST[@]}"; do
 			BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
-				[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
+			[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
 
-				chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
-				DEST="$OUT_DIR/$PROG"
+			chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
+			DEST="$OUT_DIR/$PROG"
 
-				OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
-				STATUS=$?
-				if [ $STATUS -ne 0 ]; then
-					if [[ $OUT =~ "Permission denied" ]]; then
+			OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
+			STATUS=$?
+			if [ $STATUS -ne 0 ]; then
+				if [[ $OUT =~ "Permission denied" ]]; then
+					if [ -w "$DEST" ]; then
+						mv "$BIN_PATH" "$DEST" || fail "mv failed for $BIN_PATH"
+					else
 						echo "mv with sudo..."
 						sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
-					else
-						fail "mv failed for $BIN_PATH ($OUT)"
 					fi
+				else
+					fail "mv failed for $BIN_PATH ($OUT)"
 				fi
-				echo "Moved $PROG to $DEST"
+			fi
+			echo "Moved $PROG to $DEST"
 		done
 	fi
 	cleanup

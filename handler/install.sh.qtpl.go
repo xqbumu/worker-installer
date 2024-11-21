@@ -86,7 +86,7 @@ function install {
 //line handler/install.sh.qtpl:31
 	qw422016.E().S(r.Program)
 //line handler/install.sh.qtpl:31
-	qw422016.N().S(`" 
+	qw422016.N().S(`"
 	ASPROG="`)
 //line handler/install.sh.qtpl:32
 	if len(r.AsProgram) > 0 {
@@ -119,20 +119,21 @@ function install {
 	qw422016.E().V(r.Insecure)
 //line handler/install.sh.qtpl:35
 	qw422016.N().S(`"
-	OUT_DIR="`)
-//line handler/install.sh.qtpl:36
+	OUT_DIR="$(pwd)"
+`)
+//line handler/install.sh.qtpl:37
 	if r.MoveToPath {
-//line handler/install.sh.qtpl:36
-		qw422016.N().S(`/usr/local/bin`)
-//line handler/install.sh.qtpl:36
-	} else {
-//line handler/install.sh.qtpl:36
-		qw422016.N().S(`$(pwd)`)
-//line handler/install.sh.qtpl:36
+//line handler/install.sh.qtpl:37
+		qw422016.N().S(`	if [ -d "$HOME/.local/bin" ]; then
+		OUT_DIR="$HOME/.local/bin"
+	elif [ -d "/opt/local/bin" ]; then
+		OUT_DIR="/opt/local/bin"
+	fi
+`)
+//line handler/install.sh.qtpl:43
 	}
-//line handler/install.sh.qtpl:36
-	qw422016.N().S(`"
-	GH="https://github.com"
+//line handler/install.sh.qtpl:43
+	qw422016.N().S(`	GH="https://github.com"
 	#bash check
 	[ ! "$BASH_VERSION" ] && fail "Please use bash instead"
 	[ ! -d $OUT_DIR ] && fail "output directory missing: $OUT_DIR"
@@ -168,13 +169,13 @@ function install {
 	fi
 	#find OS #TODO BSDs and other posixs
 	case `)
-//line handler/install.sh.qtpl:36
+//line handler/install.sh.qtpl:43
 	qw422016.N().S("`")
-//line handler/install.sh.qtpl:36
+//line handler/install.sh.qtpl:43
 	qw422016.N().S(`uname -s`)
-//line handler/install.sh.qtpl:36
+//line handler/install.sh.qtpl:43
 	qw422016.N().S("`")
-//line handler/install.sh.qtpl:36
+//line handler/install.sh.qtpl:43
 	qw422016.N().S(` in
 	Darwin) OS="darwin";;
 	Linux) OS="linux";;
@@ -184,18 +185,18 @@ function install {
 	if uname -m | grep -E '(arm|arch)64' > /dev/null; then
 		ARCH="arm64"
 		`)
-//line handler/install.sh.qtpl:80
+//line handler/install.sh.qtpl:87
 	if !r.M1Asset {
-//line handler/install.sh.qtpl:80
+//line handler/install.sh.qtpl:87
 		qw422016.N().S(`
 		# no m1 assets. if on mac arm64, rosetta allows fallback to amd64
 		if [[ $OS = "darwin" ]]; then
 			ARCH="amd64"
 		fi
 		`)
-//line handler/install.sh.qtpl:85
+//line handler/install.sh.qtpl:92
 	}
-//line handler/install.sh.qtpl:85
+//line handler/install.sh.qtpl:92
 	qw422016.N().S(`
 	elif uname -m | grep 64 > /dev/null; then
 		ARCH="amd64"
@@ -230,17 +231,17 @@ function install {
 	fi
 	#got URL! download it...
 	echo -n "`)
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 	if r.MoveToPath {
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 		qw422016.N().S(`Installing`)
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 	} else {
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 		qw422016.N().S(`Downloading`)
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 	}
-//line handler/install.sh.qtpl:118
+//line handler/install.sh.qtpl:125
 	qw422016.N().S(`"
 	echo -n " $USER/${PROG_LIST[*]}"
 	if [ ! -z "$RELEASE" ]; then
@@ -251,9 +252,9 @@ function install {
 	fi
 	echo -n " (${OS}/${ARCH})"
 	`)
-//line handler/install.sh.qtpl:127
+//line handler/install.sh.qtpl:134
 	if r.Search {
-//line handler/install.sh.qtpl:127
+//line handler/install.sh.qtpl:134
 		qw422016.N().S(`
 	# web search, give time to cancel
 	echo -n " in 5 seconds"
@@ -262,15 +263,15 @@ function install {
 		echo -n "."
 	done
 	`)
-//line handler/install.sh.qtpl:134
+//line handler/install.sh.qtpl:141
 	} else {
-//line handler/install.sh.qtpl:134
+//line handler/install.sh.qtpl:141
 		qw422016.N().S(`
 	echo "....."
 	`)
-//line handler/install.sh.qtpl:136
+//line handler/install.sh.qtpl:143
 	}
-//line handler/install.sh.qtpl:136
+//line handler/install.sh.qtpl:143
 	qw422016.N().S(`
 	#enter tempdir
 	mkdir -p $TMP_DIR
@@ -316,53 +317,57 @@ function install {
 	if [[ $DISTRO = "generic" ]]; then
 		for PROG in "${PROG_LIST[@]}"; do
 			BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
-				[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
+			[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
 
-				chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
-				DEST="$OUT_DIR/$PROG"
+			chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
+			DEST="$OUT_DIR/$PROG"
 
-				OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
-				STATUS=$?
-				if [ $STATUS -ne 0 ]; then
-					if [[ $OUT =~ "Permission denied" ]]; then
+			OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
+			STATUS=$?
+			if [ $STATUS -ne 0 ]; then
+				if [[ $OUT =~ "Permission denied" ]]; then
+					if [ -w "$DEST" ]; then
+						mv "$BIN_PATH" "$DEST" || fail "mv failed for $BIN_PATH"
+					else
 						echo "mv with sudo..."
 						sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
-					else
-						fail "mv failed for $BIN_PATH ($OUT)"
 					fi
+				else
+					fail "mv failed for $BIN_PATH ($OUT)"
 				fi
-				echo "Moved $PROG to $DEST"
+			fi
+			echo "Moved $PROG to $DEST"
 		done
 	fi
 	cleanup
 }
 install
 `)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 }
 
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 func WriteShell(qq422016 qtio422016.Writer, r Result) {
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	StreamShell(qw422016, r)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	qt422016.ReleaseWriter(qw422016)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 }
 
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 func Shell(r Result) string {
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	qb422016 := qt422016.AcquireByteBuffer()
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	WriteShell(qb422016, r)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	qs422016 := string(qb422016.B)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	qt422016.ReleaseByteBuffer(qb422016)
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 	return qs422016
-//line handler/install.sh.qtpl:202
+//line handler/install.sh.qtpl:213
 }
