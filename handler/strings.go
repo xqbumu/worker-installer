@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"path"
 	"regexp"
 	"strings"
 )
@@ -50,8 +51,10 @@ func getDistro(s string) string {
 		return "alpine"
 	} else if strings.HasSuffix(s, ".tar.gz") || strings.HasSuffix(s, ".tgz") {
 		return "generic"
+	} else if !strings.Contains(path.Base(s), ".") {
+		return "bin"
 	}
-	return ""
+	return "unknown"
 }
 
 func getFileExt(s string) string {

@@ -31,6 +31,17 @@ func TestFullstorydevGrpcurl(t *testing.T) {
 	}
 }
 
+func TestAutotagDevAutotag(t *testing.T) {
+	h := handler.New(handler.Config{}, nil)
+	r := httptest.NewRequest("GET", "/autotag-dev/autotag@latest!?type=script", nil)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	t.Log(w.Body.String())
+	if w.Result().StatusCode != 200 {
+		t.Fatalf("failed to get autotag-dev/autotag asset status")
+	}
+}
+
 func TestMicro(t *testing.T) {
 	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/micro", nil)
