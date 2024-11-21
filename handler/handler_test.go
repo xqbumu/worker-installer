@@ -10,7 +10,7 @@ import (
 )
 
 func TestJPilloraServe(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/jpillora/serve", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -20,8 +20,19 @@ func TestJPilloraServe(t *testing.T) {
 	}
 }
 
+func TestFullstorydevGrpcurl(t *testing.T) {
+	h := handler.New(handler.Config{}, nil)
+	r := httptest.NewRequest("GET", "/fullstorydev/grpcurl", nil)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	t.Log(w.Body.String())
+	if w.Result().StatusCode != 200 {
+		t.Fatalf("failed to get fullstorydev/grpcurl asset status")
+	}
+}
+
 func TestMicro(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/micro", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -32,7 +43,7 @@ func TestMicro(t *testing.T) {
 }
 
 func TestMicroDoubleBang(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/micro!!", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -43,7 +54,7 @@ func TestMicroDoubleBang(t *testing.T) {
 }
 
 func TestGotty(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/yudai/gotty@v0.0.12", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -54,7 +65,7 @@ func TestGotty(t *testing.T) {
 }
 
 func TestMicroInstall(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/micro?type=script", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
@@ -73,7 +84,7 @@ func TestMicroInstall(t *testing.T) {
 }
 
 func TestMicroInstallAs(t *testing.T) {
-	h := &handler.Handler{}
+	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/micro?type=script&as=mymicro", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)

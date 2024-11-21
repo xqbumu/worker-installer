@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -53,8 +52,17 @@ func (q Query) cacheKey() string {
 // Handler serves install scripts using Github releases
 type Handler struct {
 	Config
-	cacheMut sync.Mutex
-	cache    map[string]Result
+	cache Cache
+}
+
+func New(config Config, cache Cache) *Handler {
+	if cache == nil {
+		cache = NewInMemoryCache[Result](256)
+	}
+	return &Handler{
+		Config: config,
+		cache:  cache,
+	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -140,10 +148,18 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// fetch assets
-	result, err := h.execute(q)
-	if err != nil {
-		showError(err.Error(), http.StatusBadGateway)
-		return
+	cacheKey := q.cacheKey()
+	result, found := h.cache.Get(cacheKey)
+	if found {
+		log.Printf("cache hit: %s", cacheKey)
+	} else {
+		var err error
+		result, err = h.execute(q)
+		if err != nil {
+			showError(err.Error(), http.StatusBadGateway)
+			return
+		}
+		h.cache.Set(cacheKey, result)
 	}
 
 	// multi program, such: mp=ss_server,ss_client

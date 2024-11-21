@@ -13,12 +13,7 @@ import (
 func (h *Handler) execute(q Query) (Result, error) {
 	//load from cache
 	key := q.cacheKey()
-	h.cacheMut.Lock()
-	if h.cache == nil {
-		h.cache = map[string]Result{}
-	}
-	cached, ok := h.cache[key]
-	h.cacheMut.Unlock()
+	cached, ok := h.cache.Get(key)
 	//cache hit
 	if ok && time.Since(cached.Timestamp) < cacheTTL {
 		return cached, nil
@@ -62,9 +57,7 @@ func (h *Handler) execute(q Query) (Result, error) {
 		M1Asset:         assets.HasM1(),
 	}
 	//success store results
-	h.cacheMut.Lock()
-	h.cache[key] = result
-	h.cacheMut.Unlock()
+	h.cache.Set(key, result)
 	return result, nil
 }
 

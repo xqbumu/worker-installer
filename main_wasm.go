@@ -19,7 +19,7 @@ func main() {
 	c := handler.DefaultConfig
 	opts.New(&c).Repo("github.com/xqbumu/worker-installer").Version(version).Parse()
 	log.Printf("default user is '%s'", c.User)
-	h := &handler.Handler{Config: c}
+	h := handler.New(c, nil)
 	workers.Serve(h)
 	log.Print("exiting")
 }
