@@ -8,10 +8,11 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}}
     goos:
-      - linux
       - darwin
-      - windows
+      - freebsd
+      - linux
       - openbsd
+      - windows
     goarch:
       - '386'
       - amd64

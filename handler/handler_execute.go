@@ -116,7 +116,7 @@ func (h *Handler) getAssetsNoCache(q Query) (string, Assets, error) {
 		switch fext {
 		case ".bin", ".zip", ".tar.bz", ".tar.bz2", ".tar.xz", ".bz2", ".gz", ".tar.gz", ".tgz":
 			fallthrough
-		case ".rpm", ".deb":
+		case ".rpm", ".deb", ".apk":
 			// valid
 		default:
 			log.Printf("fetched asset has unsupported file type: %s (ext '%s')", ga.Name, fext)

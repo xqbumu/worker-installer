@@ -311,6 +311,11 @@ function install {
 		bash -c "$GET $URL" > tmp.rpm || fail "download failed"
 		sudo rpm -i tmp.rpm || fail "rpm install failed"
 		rm tmp.rpm || fail "cleanup failed"
+	elif [[ $FTYPE = ".apk" ]]; then
+		which unzip > /dev/null || fail "unzip is not installed"
+		bash -c "$GET $URL" > tmp.apk || fail "download failed"
+		sudo apk add --allow-untrusted tmp.apk || fail "unzip failed"
+		rm tmp.apk || fail "cleanup failed"
 	else
 		fail "unknown file type: $FTYPE"
 	fi
@@ -343,31 +348,31 @@ function install {
 }
 install
 `)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 }
 
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 func WriteShell(qq422016 qtio422016.Writer, r Result) {
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	StreamShell(qw422016, r)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	qt422016.ReleaseWriter(qw422016)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 }
 
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 func Shell(r Result) string {
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	qb422016 := qt422016.AcquireByteBuffer()
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	WriteShell(qb422016, r)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	qs422016 := string(qb422016.B)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	qt422016.ReleaseByteBuffer(qb422016)
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 	return qs422016
-//line handler/install.sh.qtpl:213
+//line handler/install.sh.qtpl:218
 }

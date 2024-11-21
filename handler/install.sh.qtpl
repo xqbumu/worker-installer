@@ -179,6 +179,11 @@ function install {
 		bash -c "$GET $URL" > tmp.rpm || fail "download failed"
 		sudo rpm -i tmp.rpm || fail "rpm install failed"
 		rm tmp.rpm || fail "cleanup failed"
+	elif [[ $FTYPE = ".apk" ]]; then
+		which unzip > /dev/null || fail "unzip is not installed"
+		bash -c "$GET $URL" > tmp.apk || fail "download failed"
+		sudo apk add --allow-untrusted tmp.apk || fail "unzip failed"
+		rm tmp.apk || fail "cleanup failed"
 	else
 		fail "unknown file type: $FTYPE"
 	fi
