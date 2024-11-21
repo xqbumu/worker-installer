@@ -59,7 +59,7 @@ func TestFileCache(t *testing.T) {
 	cache.Set("key4", "value4")
 	cache.flushBatch()
 
-	filePath := filepath.Join(dir, "key4.json")
+	filePath := filepath.Join(dir, "key4.cache.json")
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		t.Errorf("expected key4 to be saved to file")
 	}

@@ -1,2 +1,2 @@
-FROM ghcr.io/jpillora/installer
+FROM ghcr.io/xqbumu/worker-installer
 ENTRYPOINT ["/app/bin"]
