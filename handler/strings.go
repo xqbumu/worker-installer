@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	archRe     = regexp.MustCompile(`(arm64|arm|386|686|amd64|x86_64|aarch64|32|64)`)
+	archRe     = regexp.MustCompile(`(arm64|arm|386|686|amd64|x86_64|aarch64|loong64|mips|mips64|mips64le|mipsle|ppc64|ppc64le|riscv64|s390x|32|64)`)
 	fileExtRe  = regexp.MustCompile(`(\.tar)?(\.[a-z][a-z0-9]+)$`)
 	posixOSRe  = regexp.MustCompile(`(darwin|linux|(net|free|open)bsd|mac|osx|windows|win)`)
 	checksumRe = regexp.MustCompile(`(checksums|sha256sums)`)
@@ -36,6 +36,22 @@ func getArch(s string) string {
 		a = "arm64"
 	}
 	return a
+}
+
+// getDistro detection linux distro by file ext.
+// such as: .deb is debian, rpm is redhat, etc...
+func getDistro(s string) string {
+	s = strings.ToLower(s)
+	if strings.HasSuffix(s, ".deb") {
+		return "debian"
+	} else if strings.HasSuffix(s, ".rpm") {
+		return "redhat"
+	} else if strings.HasSuffix(s, ".apk") {
+		return "alpine"
+	} else if strings.HasSuffix(s, ".tar.gz") || strings.HasSuffix(s, ".tgz") {
+		return "generic"
+	}
+	return ""
 }
 
 func getFileExt(s string) string {

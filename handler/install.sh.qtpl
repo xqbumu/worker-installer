@@ -3,7 +3,7 @@
 if [ "$DEBUG" == "1" ]; then
 	set -x
 fi
-TMP_DIR=$(mktemp -d -t jpillora-installer-XXXXXXXXXX)
+TMP_DIR=$(mktemp -d -t worker-installer-XXXXXXXXXX)
 function cleanup {
 	rm -rf $TMP_DIR > /dev/null
 }
@@ -13,6 +13,17 @@ function fail {
 	echo "============"
 	echo "Error: $msg" 1>&2
 	exit 1
+}
+function choose_asset {
+	OS_ARCH=$1
+	DISTRO=$2
+	case "${OS_ARCH}_${DISTRO}" in{% for _, n := range r.Assets %}
+	"{%s n.OS %}_{%s n.Arch %}_{%s n.Distro %}")
+		echo "{%s n.URL %} {%s n.Type %}"
+		return
+		;;{% endfor %}
+	*) exit 1;;
+	esac
 }
 function install {
 	#settings
@@ -81,16 +92,28 @@ function install {
 	else
 		fail "unknown arch: $(uname -m)"
 	fi
+	#find Distro
+	if [ -f /etc/os-release ]; then
+		DISTRO=$(grep ^ID_LIKE= /etc/os-release | cut -d '=' -f 2-)
+		if [ -z "$DISTRO" ]; then
+			DISTRO=$(grep ^ID= /etc/os-release | cut -d '=' -f 2-)
+		fi
+	else
+		DISTRO="generic"
+	fi
 	#choose from asset list
-	URL=""
-	FTYPE=""
-	case "${OS}_${ARCH}" in{% for _, n := range r.Assets %}
-	"{%s n.OS %}_{%s n.Arch %}")
-		URL="{%s n.URL %}"
-		FTYPE="{%s n.Type %}"
-		;;{% endfor %}
-	*) fail "No asset for platform ${OS}-${ARCH}";;
-	esac
+	OS_ARCH="${OS}_${ARCH}"
+	ASSET_INFO=$(choose_asset "$OS_ARCH" "generic")
+	if [ $? -ne 0 ]; then
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO")
+	else
+		DISTRO="generic"
+	fi
+	URL=$(echo $ASSET_INFO | cut -d ' ' -f 1)
+	FTYPE=$(echo $ASSET_INFO | cut -d ' ' -f 2)
+	if [ -z "$URL" ] || [ -z "$FTYPE" ]; then
+		fail "No valid asset found for ${OS_ARCH}"
+	fi
 	#got URL! download it...
 	echo -n "{% if r.MoveToPath %}Installing{% else %}Downloading{% endif %}"
 	echo -n " $USER/${PROG_LIST[*]}"
@@ -139,28 +162,40 @@ function install {
 		rm tmp.zip || fail "cleanup failed"
 	elif [[ $FTYPE = ".bin" ]]; then
 		bash -c "$GET $URL" > "${PROG_LIST[0]}_${OS}_${ARCH}" || fail "download failed"
+	elif [[ $FTYPE = ".deb" ]]; then
+		which dpkg > /dev/null || fail "dpkg is not installed"
+		bash -c "$GET $URL" > tmp.deb || fail "download failed"
+		sudo dpkg -i tmp.deb || fail "dpkg install failed"
+		rm tmp.deb || fail "cleanup failed"
+	elif [[ $FTYPE = ".rpm" ]]; then
+		which rpm > /dev/null || fail "rpm is not installed"
+		bash -c "$GET $URL" > tmp.rpm || fail "download failed"
+		sudo rpm -i tmp.rpm || fail "rpm install failed"
+		rm tmp.rpm || fail "cleanup failed"
 	else
 		fail "unknown file type: $FTYPE"
 	fi
-	for PROG in "${PROG_LIST[@]}"; do
-		BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
-        [[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
+	if [[ $DISTRO = "generic" ]]; then
+		for PROG in "${PROG_LIST[@]}"; do
+			BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
+				[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
 
-        chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
-        DEST="$OUT_DIR/$PROG"
+				chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
+				DEST="$OUT_DIR/$PROG"
 
-        OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
-        STATUS=$?
-        if [ $STATUS -ne 0 ]; then
-            if [[ $OUT =~ "Permission denied" ]]; then
-                echo "mv with sudo..."
-                sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
-            else
-                fail "mv failed for $BIN_PATH ($OUT)"
-            fi
-        fi
-        echo "Moved $PROG to $DEST"
-    done
+				OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
+				STATUS=$?
+				if [ $STATUS -ne 0 ]; then
+					if [[ $OUT =~ "Permission denied" ]]; then
+						echo "mv with sudo..."
+						sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
+					else
+						fail "mv failed for $BIN_PATH ($OUT)"
+					fi
+				fi
+				echo "Moved $PROG to $DEST"
+		done
+	fi
 	cleanup
 }
 install

@@ -25,7 +25,7 @@ func StreamShell(qw422016 *qt422016.Writer, r Result) {
 if [ "$DEBUG" == "1" ]; then
 	set -x
 fi
-TMP_DIR=$(mktemp -d -t jpillora-installer-XXXXXXXXXX)
+TMP_DIR=$(mktemp -d -t worker-installer-XXXXXXXXXX)
 function cleanup {
 	rm -rf $TMP_DIR > /dev/null
 }
@@ -36,62 +36,101 @@ function fail {
 	echo "Error: $msg" 1>&2
 	exit 1
 }
+function choose_asset {
+	OS_ARCH=$1
+	DISTRO=$2
+	case "${OS_ARCH}_${DISTRO}" in`)
+//line handler/install.sh.qtpl:20
+	for _, n := range r.Assets {
+//line handler/install.sh.qtpl:20
+		qw422016.N().S(`
+	"`)
+//line handler/install.sh.qtpl:21
+		qw422016.E().S(n.OS)
+//line handler/install.sh.qtpl:21
+		qw422016.N().S(`_`)
+//line handler/install.sh.qtpl:21
+		qw422016.E().S(n.Arch)
+//line handler/install.sh.qtpl:21
+		qw422016.N().S(`_`)
+//line handler/install.sh.qtpl:21
+		qw422016.E().S(n.Distro)
+//line handler/install.sh.qtpl:21
+		qw422016.N().S(`")
+		echo "`)
+//line handler/install.sh.qtpl:22
+		qw422016.E().S(n.URL)
+//line handler/install.sh.qtpl:22
+		qw422016.N().S(` `)
+//line handler/install.sh.qtpl:22
+		qw422016.E().S(n.Type)
+//line handler/install.sh.qtpl:22
+		qw422016.N().S(`"
+		return
+		;;`)
+//line handler/install.sh.qtpl:24
+	}
+//line handler/install.sh.qtpl:24
+	qw422016.N().S(`
+	*) exit 1;;
+	esac
+}
 function install {
 	#settings
 	USER="`)
-//line handler/install.sh.qtpl:19
+//line handler/install.sh.qtpl:30
 	qw422016.E().S(r.User)
-//line handler/install.sh.qtpl:19
+//line handler/install.sh.qtpl:30
 	qw422016.N().S(`"
 	IFS=',' read -r -a PROG_LIST <<< "`)
-//line handler/install.sh.qtpl:20
+//line handler/install.sh.qtpl:31
 	qw422016.E().S(r.Program)
-//line handler/install.sh.qtpl:20
+//line handler/install.sh.qtpl:31
 	qw422016.N().S(`" 
 	ASPROG="`)
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 	if len(r.AsProgram) > 0 {
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 		qw422016.N().S(` `)
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 		qw422016.E().S(r.AsProgram)
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 		qw422016.N().S(` `)
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 	}
-//line handler/install.sh.qtpl:21
+//line handler/install.sh.qtpl:32
 	qw422016.N().S(`"
 	MOVE="`)
-//line handler/install.sh.qtpl:22
+//line handler/install.sh.qtpl:33
 	qw422016.E().V(r.MoveToPath)
-//line handler/install.sh.qtpl:22
+//line handler/install.sh.qtpl:33
 	qw422016.N().S(`"
 	RELEASE="`)
-//line handler/install.sh.qtpl:23
+//line handler/install.sh.qtpl:34
 	qw422016.E().S(r.Release)
-//line handler/install.sh.qtpl:23
+//line handler/install.sh.qtpl:34
 	qw422016.N().S(`" # `)
-//line handler/install.sh.qtpl:23
+//line handler/install.sh.qtpl:34
 	qw422016.E().S(r.ResolvedRelease)
-//line handler/install.sh.qtpl:23
+//line handler/install.sh.qtpl:34
 	qw422016.N().S(`
 	INSECURE="`)
-//line handler/install.sh.qtpl:24
+//line handler/install.sh.qtpl:35
 	qw422016.E().V(r.Insecure)
-//line handler/install.sh.qtpl:24
+//line handler/install.sh.qtpl:35
 	qw422016.N().S(`"
 	OUT_DIR="`)
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	if r.MoveToPath {
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 		qw422016.N().S(`/usr/local/bin`)
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	} else {
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 		qw422016.N().S(`$(pwd)`)
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	}
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	qw422016.N().S(`"
 	GH="https://github.com"
 	#bash check
@@ -129,13 +168,13 @@ function install {
 	fi
 	#find OS #TODO BSDs and other posixs
 	case `)
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	qw422016.N().S("`")
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	qw422016.N().S(`uname -s`)
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	qw422016.N().S("`")
-//line handler/install.sh.qtpl:25
+//line handler/install.sh.qtpl:36
 	qw422016.N().S(` in
 	Darwin) OS="darwin";;
 	Linux) OS="linux";;
@@ -145,18 +184,18 @@ function install {
 	if uname -m | grep -E '(arm|arch)64' > /dev/null; then
 		ARCH="arm64"
 		`)
-//line handler/install.sh.qtpl:69
+//line handler/install.sh.qtpl:80
 	if !r.M1Asset {
-//line handler/install.sh.qtpl:69
+//line handler/install.sh.qtpl:80
 		qw422016.N().S(`
 		# no m1 assets. if on mac arm64, rosetta allows fallback to amd64
 		if [[ $OS = "darwin" ]]; then
 			ARCH="amd64"
 		fi
 		`)
-//line handler/install.sh.qtpl:74
+//line handler/install.sh.qtpl:85
 	}
-//line handler/install.sh.qtpl:74
+//line handler/install.sh.qtpl:85
 	qw422016.N().S(`
 	elif uname -m | grep 64 > /dev/null; then
 		ARCH="amd64"
@@ -167,53 +206,41 @@ function install {
 	else
 		fail "unknown arch: $(uname -m)"
 	fi
+	#find Distro
+	if [ -f /etc/os-release ]; then
+		DISTRO=$(grep ^ID_LIKE= /etc/os-release | cut -d '=' -f 2-)
+		if [ -z "$DISTRO" ]; then
+			DISTRO=$(grep ^ID= /etc/os-release | cut -d '=' -f 2-)
+		fi
+	else
+		DISTRO="generic"
+	fi
 	#choose from asset list
-	URL=""
-	FTYPE=""
-	case "${OS}_${ARCH}" in`)
-//line handler/install.sh.qtpl:87
-	for _, n := range r.Assets {
-//line handler/install.sh.qtpl:87
-		qw422016.N().S(`
-	"`)
-//line handler/install.sh.qtpl:88
-		qw422016.E().S(n.OS)
-//line handler/install.sh.qtpl:88
-		qw422016.N().S(`_`)
-//line handler/install.sh.qtpl:88
-		qw422016.E().S(n.Arch)
-//line handler/install.sh.qtpl:88
-		qw422016.N().S(`")
-		URL="`)
-//line handler/install.sh.qtpl:89
-		qw422016.E().S(n.URL)
-//line handler/install.sh.qtpl:89
-		qw422016.N().S(`"
-		FTYPE="`)
-//line handler/install.sh.qtpl:90
-		qw422016.E().S(n.Type)
-//line handler/install.sh.qtpl:90
-		qw422016.N().S(`"
-		;;`)
-//line handler/install.sh.qtpl:91
-	}
-//line handler/install.sh.qtpl:91
-	qw422016.N().S(`
-	*) fail "No asset for platform ${OS}-${ARCH}";;
-	esac
+	OS_ARCH="${OS}_${ARCH}"
+	ASSET_INFO=$(choose_asset "$OS_ARCH" "generic")
+	if [ $? -ne 0 ]; then
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO")
+	else
+		DISTRO="generic"
+	fi
+	URL=$(echo $ASSET_INFO | cut -d ' ' -f 1)
+	FTYPE=$(echo $ASSET_INFO | cut -d ' ' -f 2)
+	if [ -z "$URL" ] || [ -z "$FTYPE" ]; then
+		fail "No valid asset found for ${OS_ARCH}"
+	fi
 	#got URL! download it...
 	echo -n "`)
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 	if r.MoveToPath {
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 		qw422016.N().S(`Installing`)
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 	} else {
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 		qw422016.N().S(`Downloading`)
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 	}
-//line handler/install.sh.qtpl:95
+//line handler/install.sh.qtpl:118
 	qw422016.N().S(`"
 	echo -n " $USER/${PROG_LIST[*]}"
 	if [ ! -z "$RELEASE" ]; then
@@ -224,9 +251,9 @@ function install {
 	fi
 	echo -n " (${OS}/${ARCH})"
 	`)
-//line handler/install.sh.qtpl:104
+//line handler/install.sh.qtpl:127
 	if r.Search {
-//line handler/install.sh.qtpl:104
+//line handler/install.sh.qtpl:127
 		qw422016.N().S(`
 	# web search, give time to cancel
 	echo -n " in 5 seconds"
@@ -235,15 +262,15 @@ function install {
 		echo -n "."
 	done
 	`)
-//line handler/install.sh.qtpl:111
+//line handler/install.sh.qtpl:134
 	} else {
-//line handler/install.sh.qtpl:111
+//line handler/install.sh.qtpl:134
 		qw422016.N().S(`
 	echo "....."
 	`)
-//line handler/install.sh.qtpl:113
+//line handler/install.sh.qtpl:136
 	}
-//line handler/install.sh.qtpl:113
+//line handler/install.sh.qtpl:136
 	qw422016.N().S(`
 	#enter tempdir
 	mkdir -p $TMP_DIR
@@ -273,57 +300,69 @@ function install {
 		rm tmp.zip || fail "cleanup failed"
 	elif [[ $FTYPE = ".bin" ]]; then
 		bash -c "$GET $URL" > "${PROG_LIST[0]}_${OS}_${ARCH}" || fail "download failed"
+	elif [[ $FTYPE = ".deb" ]]; then
+		which dpkg > /dev/null || fail "dpkg is not installed"
+		bash -c "$GET $URL" > tmp.deb || fail "download failed"
+		sudo dpkg -i tmp.deb || fail "dpkg install failed"
+		rm tmp.deb || fail "cleanup failed"
+	elif [[ $FTYPE = ".rpm" ]]; then
+		which rpm > /dev/null || fail "rpm is not installed"
+		bash -c "$GET $URL" > tmp.rpm || fail "download failed"
+		sudo rpm -i tmp.rpm || fail "rpm install failed"
+		rm tmp.rpm || fail "cleanup failed"
 	else
 		fail "unknown file type: $FTYPE"
 	fi
-	for PROG in "${PROG_LIST[@]}"; do
-		BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
-        [[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
+	if [[ $DISTRO = "generic" ]]; then
+		for PROG in "${PROG_LIST[@]}"; do
+			BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
+				[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
 
-        chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
-        DEST="$OUT_DIR/$PROG"
+				chmod +x "$BIN_PATH" || fail "chmod +x failed on $BIN_PATH"
+				DEST="$OUT_DIR/$PROG"
 
-        OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
-        STATUS=$?
-        if [ $STATUS -ne 0 ]; then
-            if [[ $OUT =~ "Permission denied" ]]; then
-                echo "mv with sudo..."
-                sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
-            else
-                fail "mv failed for $BIN_PATH ($OUT)"
-            fi
-        fi
-        echo "Moved $PROG to $DEST"
-    done
+				OUT=$(mv "$BIN_PATH" "$DEST" 2>&1)
+				STATUS=$?
+				if [ $STATUS -ne 0 ]; then
+					if [[ $OUT =~ "Permission denied" ]]; then
+						echo "mv with sudo..."
+						sudo mv "$BIN_PATH" "$DEST" || fail "sudo mv failed for $BIN_PATH"
+					else
+						fail "mv failed for $BIN_PATH ($OUT)"
+					fi
+				fi
+				echo "Moved $PROG to $DEST"
+		done
+	fi
 	cleanup
 }
 install
 `)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 }
 
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 func WriteShell(qq422016 qtio422016.Writer, r Result) {
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	StreamShell(qw422016, r)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	qt422016.ReleaseWriter(qw422016)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 }
 
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 func Shell(r Result) string {
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	qb422016 := qt422016.AcquireByteBuffer()
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	WriteShell(qb422016, r)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	qs422016 := string(qb422016.B)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	qt422016.ReleaseByteBuffer(qb422016)
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 	return qs422016
-//line handler/install.sh.qtpl:167
+//line handler/install.sh.qtpl:202
 }

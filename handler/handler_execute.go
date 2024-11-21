@@ -115,6 +115,8 @@ func (h *Handler) getAssetsNoCache(q Query) (string, Assets, error) {
 		}
 		switch fext {
 		case ".bin", ".zip", ".tar.bz", ".tar.bz2", ".tar.xz", ".bz2", ".gz", ".tar.gz", ".tgz":
+			fallthrough
+		case ".rpm", ".deb":
 			// valid
 		default:
 			log.Printf("fetched asset has unsupported file type: %s (ext '%s')", ga.Name, fext)
@@ -123,6 +125,7 @@ func (h *Handler) getAssetsNoCache(q Query) (string, Assets, error) {
 		//match
 		os := getOS(ga.Name)
 		arch := getArch(ga.Name)
+		distro := getDistro(ga.Name)
 		//windows not supported yet
 		if os == "windows" {
 			log.Printf("fetched asset is for windows: %s", ga.Name)
@@ -143,6 +146,7 @@ func (h *Handler) getAssetsNoCache(q Query) (string, Assets, error) {
 		asset := Asset{
 			OS:     os,
 			Arch:   arch,
+			Distro: distro,
 			Name:   ga.Name,
 			URL:    url,
 			Type:   fext,

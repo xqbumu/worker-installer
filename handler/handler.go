@@ -192,15 +192,26 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type Asset struct {
-	Name, OS, Arch, URL, Type, SHA256 string
+	Name, OS, Arch, Distro, URL, Type, SHA256 string
 }
 
 func (a Asset) Key() string {
-	return a.OS + "/" + a.Arch
+	if a.Distro == "generic" {
+		return a.OS + "/" + a.Arch
+	}
+	return a.OS + "/" + a.Arch + "/" + a.Distro
 }
 
 func (a Asset) Is32Bit() bool {
 	return a.Arch == "386"
+}
+
+func (a Asset) IsLinux() bool {
+	return a.OS == "linux"
+}
+
+func (a Asset) IsWindows() bool {
+	return a.OS == "windows"
 }
 
 func (a Asset) IsMac() bool {
