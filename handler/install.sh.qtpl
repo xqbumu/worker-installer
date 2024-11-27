@@ -110,12 +110,20 @@ function install {
 	fi
 	#choose from asset list
 	OS_ARCH="${OS}_${ARCH}"
-	ASSET_INFO=$(choose_asset "$OS_ARCH" "generic")
+	DISTRO_FINAL="generic"
+	ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
 	if [ $? -ne 0 ]; then
-		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO")
-	else
-		DISTRO="generic"
+		DISTRO_FINAL="bin"
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
 	fi
+	if [ $? -ne 0 ]; then
+		DISTRO_FINAL="$DISTRO"
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
+	fi
+	if [ $? -ne 0 ]; then
+		fail "No matched asset for ${OS_ARCH}"
+	fi
+	DISTRO="$DISTRO_FINAL"
 	URL=$(echo $ASSET_INFO | cut -d ' ' -f 1)
 	FTYPE=$(echo $ASSET_INFO | cut -d ' ' -f 2)
 	if [ -z "$URL" ] || [ -z "$FTYPE" ]; then

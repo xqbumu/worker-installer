@@ -218,12 +218,20 @@ function install {
 	fi
 	#choose from asset list
 	OS_ARCH="${OS}_${ARCH}"
-	ASSET_INFO=$(choose_asset "$OS_ARCH" "generic")
+	DISTRO_FINAL="generic"
+	ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
 	if [ $? -ne 0 ]; then
-		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO")
-	else
-		DISTRO="generic"
+		DISTRO_FINAL="bin"
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
 	fi
+	if [ $? -ne 0 ]; then
+		DISTRO_FINAL="$DISTRO"
+		ASSET_INFO=$(choose_asset "$OS_ARCH" "$DISTRO_FINAL")
+	fi
+	if [ $? -ne 0 ]; then
+		fail "No matched asset for ${OS_ARCH}"
+	fi
+	DISTRO="$DISTRO_FINAL"
 	URL=$(echo $ASSET_INFO | cut -d ' ' -f 1)
 	FTYPE=$(echo $ASSET_INFO | cut -d ' ' -f 2)
 	if [ -z "$URL" ] || [ -z "$FTYPE" ]; then
@@ -231,17 +239,17 @@ function install {
 	fi
 	#got URL! download it...
 	echo -n "`)
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 	if r.MoveToPath {
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 		qw422016.N().S(`Installing`)
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 	} else {
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 		qw422016.N().S(`Downloading`)
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 	}
-//line handler/install.sh.qtpl:125
+//line handler/install.sh.qtpl:133
 	qw422016.N().S(`"
 	echo -n " $USER/${PROG_LIST[*]}"
 	if [ ! -z "$RELEASE" ]; then
@@ -252,9 +260,9 @@ function install {
 	fi
 	echo -n " (${OS}/${ARCH})"
 	`)
-//line handler/install.sh.qtpl:134
+//line handler/install.sh.qtpl:142
 	if r.Search {
-//line handler/install.sh.qtpl:134
+//line handler/install.sh.qtpl:142
 		qw422016.N().S(`
 	# web search, give time to cancel
 	echo -n " in 5 seconds"
@@ -263,15 +271,15 @@ function install {
 		echo -n "."
 	done
 	`)
-//line handler/install.sh.qtpl:141
+//line handler/install.sh.qtpl:149
 	} else {
-//line handler/install.sh.qtpl:141
+//line handler/install.sh.qtpl:149
 		qw422016.N().S(`
 	echo "....."
 	`)
-//line handler/install.sh.qtpl:143
+//line handler/install.sh.qtpl:151
 	}
-//line handler/install.sh.qtpl:143
+//line handler/install.sh.qtpl:151
 	qw422016.N().S(`
 	#enter tempdir
 	mkdir -p $TMP_DIR
@@ -348,31 +356,31 @@ function install {
 }
 install
 `)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 }
 
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 func WriteShell(qq422016 qtio422016.Writer, r Result) {
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	StreamShell(qw422016, r)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	qt422016.ReleaseWriter(qw422016)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 }
 
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 func Shell(r Result) string {
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	qb422016 := qt422016.AcquireByteBuffer()
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	WriteShell(qb422016, r)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	qs422016 := string(qb422016.B)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	qt422016.ReleaseByteBuffer(qb422016)
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 	return qs422016
-//line handler/install.sh.qtpl:218
+//line handler/install.sh.qtpl:226
 }
