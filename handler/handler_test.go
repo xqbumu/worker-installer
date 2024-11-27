@@ -31,9 +31,31 @@ func TestFullstorydevGrpcurl(t *testing.T) {
 	}
 }
 
+func TestFullstorydevGrpcurlRuby(t *testing.T) {
+	h := handler.New(handler.Config{}, nil)
+	r := httptest.NewRequest("GET", "/fullstorydev/grpcurl?type=ruby", nil)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	t.Log(w.Body.String())
+	if w.Result().StatusCode != 200 {
+		t.Fatalf("failed to get fullstorydev/grpcurl asset status")
+	}
+}
+
 func TestAutotagDevAutotag(t *testing.T) {
 	h := handler.New(handler.Config{}, nil)
 	r := httptest.NewRequest("GET", "/autotag-dev/autotag@latest!?type=script", nil)
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	t.Log(w.Body.String())
+	if w.Result().StatusCode != 200 {
+		t.Fatalf("failed to get autotag-dev/autotag asset status")
+	}
+}
+
+func TestAutotagDevAutotagRuby(t *testing.T) {
+	h := handler.New(handler.Config{}, nil)
+	r := httptest.NewRequest("GET", "/autotag-dev/autotag@latest!?type=ruby", nil)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	t.Log(w.Body.String())

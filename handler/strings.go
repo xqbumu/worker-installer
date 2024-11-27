@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"path"
 	"regexp"
 	"strings"
 )
@@ -49,12 +48,10 @@ func getDistro(s string) string {
 		return "redhat"
 	} else if strings.HasSuffix(s, ".apk") {
 		return "alpine"
-	} else if strings.HasSuffix(s, ".tar.gz") || strings.HasSuffix(s, ".tgz") {
+	} else if strings.HasSuffix(s, ".tar.gz") || strings.HasSuffix(s, ".tgz") || strings.HasSuffix(s, ".gz") {
 		return "generic"
-	} else if !strings.Contains(path.Base(s), ".") {
-		return "bin"
 	}
-	return "unknown"
+	return "bin"
 }
 
 func getFileExt(s string) string {
