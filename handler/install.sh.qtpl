@@ -195,7 +195,7 @@ function install {
 	else
 		fail "unknown file type: $FTYPE"
 	fi
-	if [[ $DISTRO = "generic" ]]; then
+	if [[ $DISTRO = "generic" || $DISTRO = "bin" ]]; then
 		for PROG in "${PROG_LIST[@]}"; do
 			BIN_PATH=$(find . -type f | grep -i "$PROG" | head -n 1)
 			[[ -z "$BIN_PATH" ]] && fail "Binary $PROG not found"
